@@ -69,6 +69,8 @@ client.on('messageCreate', async (message) => {
 
 client.on(Events.MessageReactionAdd, async (reaction, user) => {
     // When a reaction is received, check if the structure is partial
+
+    //console.log(user);
     if (reaction.partial) {
         // If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
         try {
@@ -84,8 +86,8 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         //id: reaction.message.id,
         server: reaction.message.guild.name,
         channel: reaction.message.channel.name,
-        sender: reaction.message.author.username,
-        senderDiscordId: reaction.message.author.id,
+        sender: user.username,
+        senderDiscordId: user.id,
         emoji: reaction.emoji.name,
         reactionCount: reaction.count,
         createdTimestamp: reaction.message.createdTimestamp,
@@ -100,11 +102,12 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
             { new: true }
         );
 
-        console.log(result);
+       // console.log(result);
 
     } catch (error) {
         console.error(error);
     }
+    
 
 
     // Now the message has been cached and is fully available
@@ -115,7 +118,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
 
 
-client.login(process.env.DISCORD_BOT_TOKEN);
+//client.login(process.env.DISCORD_BOT_TOKEN);
 //console.log(process.env.DISCORD_BOT_TOKEN);
 
 mongoose.connect(process.env.DB_CONNECTION_URL, () => {
