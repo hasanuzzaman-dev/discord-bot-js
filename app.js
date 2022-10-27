@@ -118,7 +118,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
 
 
-//client.login(process.env.DISCORD_BOT_TOKEN);
+client.login(process.env.DISCORD_BOT_TOKEN);
 //console.log(process.env.DISCORD_BOT_TOKEN);
 
 mongoose.connect(process.env.DB_CONNECTION_URL, () => {
