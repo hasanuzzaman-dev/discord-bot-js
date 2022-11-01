@@ -84,6 +84,10 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         }
     }
 
+    var today = new Date();
+    console.log(today);
+    //today.setHours(0, 0, 0, 0);
+
     const messageReaction = new DiscordReaction({
         //id: reaction.message.id,
         messageId: reaction.message.id,
@@ -93,12 +97,12 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         senderDiscordId: user.id,
         emoji: reaction.emoji.name,
         reactionCount: reaction.count,
-        createdTimestamp: reaction.message.createdTimestamp,
-        createdAt: reaction.message.createdAt,
+        createdTimestamp: today,
+        createdAt: today,
     })
 
-    //console.log(react);
-    /* try {
+    //console.log(reaction);
+    try {
         const result = await DiscordMsg.findOneAndUpdate(
             { messageId: reaction.message.id },
             { $push: { messageReactions: messageReaction } },
@@ -109,14 +113,14 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
     } catch (error) {
         console.error(error);
-    } */
+    } 
 
-    try {
+    /* try {
         const discordReaction = await messageReaction.save();
         console.log(discordReaction);
     } catch (error) {
         console.error(error);
-    }
+    } */
 
 
 

@@ -76,33 +76,37 @@ router.get('/user-interactions/message-count', async (req, res) => {
     }
 
 
+
     try {
 
-        const interaction = await DiscordMsg
-            .find({
-                createdTimestamp: { $gte: startTime, $lte: endTime }
-            })
-            .limit(pageSize)
-            .skip(pageSize * page)
-            .sort({ createdTimestamp: -1 })
-        //.group({_id: '$senderDiscordId', count: { $sum: 1 }});
+        const result = await DiscordMsg.aggregate([
+            //{ $unwind: '$messageReactions' },
+            {
+                $match:
+                    { 'createdTimestamp': { $gte: startTime, $lte: endTime } }
+            },
+            {
+                $group:
+                {
+                    _id: '$senderDiscordId',
+                    name: { $first: '$sender' },
+                    count: { $sum: 1 }
+                }
+            },
+            { "$sort": { createdTimestamp: -1 } },
+            { "$limit": pageSize },
+            { "$skip": pageSize * page },
 
-        //console.log(interaction);
+        ]);
 
+        // console.log(result);
 
-        const result = Object.values(interaction.reduce((c, { senderDiscordId, sender }) => {
-            // console.log(`C: ${JSON.stringify(c)}, id: ${senderDiscordId}`);
-            c[senderDiscordId] = c[senderDiscordId] || { name: sender, senderDiscordId: senderDiscordId, count: 0 };
-            c[senderDiscordId].count++;
-            return c;
-        }, {}));
 
         res.json({
             'total': result.length,
-            'msgCount': result,
-
+            //'msgCount': reactionCount,
+            'reactionCount': result
         });
-
 
 
 
@@ -136,64 +140,33 @@ router.get('/user-interactions/reaction-count', async (req, res) => {
 
     try {
 
+        const result = await DiscordMsg.aggregate([
+            { $unwind: '$messageReactions' },
+            {
+                $match:
+                    { 'messageReactions.createdTimestamp': { $gte: startTime, $lte: endTime } }
+            },
+            {
+                $group:
+                {
+                    _id: '$messageReactions.senderDiscordId',
+                    name: { $first: '$messageReactions.sender' },
+                    count: { $sum: 1 }
+                }
+            },
+            { "$sort": { createdTimestamp: -1 } },
+            { "$limit": pageSize },
+            { "$skip": pageSize * page },
 
-        const msgReactions = await DiscordReaction
-            .find({
-                "createdTimestamp": { $gte: startTime, $lte: endTime }
-            })
-            .limit(pageSize)
-            .skip(pageSize * page)
-            .sort({ createdTimestamp: -1 });
-
-        console.log(msgReactions);
-
-        /* let reactionArr = [];
-        msgReactions.map(a => {
-            a.messageReactions.forEach(element => {
-                //console.log(element);
-                reactionArr.push(element);
-            });
-        }) */
-
-        //console.log(reactionArr);
-
-        const reactionCount = Object.values(msgReactions.reduce((c, { senderDiscordId, sender }) => {
-           // console.log(`C: ${JSON.stringify(c)}, id: ${senderDiscordId}`);
-            c[senderDiscordId] = c[senderDiscordId] || { name: sender, senderDiscordId: senderDiscordId, count: 0 };
-            c[senderDiscordId].count++;
-            return c;
-        }, {}));
-
-        /*   const reactionCount = interaction.reduce((c, { senderDiscordId,sender }) => {
-              console.log(`C: ${JSON.stringify(c)}, id: ${senderDiscordId}`);
-             c[senderDiscordId] = c[senderDiscordId] || { name: sender, count: 0 };
-             c[senderDiscordId].count++;
-             return c;
-         },{} );  */
-
-
-        /* const msgReactions = await DiscordMsg
-            .find({
-                "messageReactions.createdTimestamp": { $gte: startTime, $lte: endTime }
-            }, 'messageReactions')
-            .limit(pageSize)
-            .skip(pageSize * page)
-            .sort({ createdTimestamp: -1 }); */
-        //console.log(s);
-        //console.log(e);
-
-        /* const result = await DiscordMsg.aggregate( [
-            { $match: {'createdTimestamp': { $gte: startTime, $lte: endTime } }},
-            //{ $group: { _id: '$senderDiscordId', count: { $sum: 1 } } }
-          ] ); */
+        ]);
 
         // console.log(result);
 
 
         res.json({
-            'total': reactionCount.length,
-            'msgCount': reactionCount,
-            //'data':msgReactions
+            'total': result.length,
+            //'msgCount': reactionCount,
+            'reactionCount': result
         });
 
 

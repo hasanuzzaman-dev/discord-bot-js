@@ -9,7 +9,7 @@ const reactionSchema = mongoose.Schema({
     senderDiscordId: String,
     emoji: String,
     reactionCount: String,
-    createdTimestamp: String,
+    createdTimestamp: Number,
     createdAt: String,
 
 });

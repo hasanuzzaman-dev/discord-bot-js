@@ -8,7 +8,7 @@ const messageSchema = mongoose.Schema({
     sender: String,
     senderDiscordId: String,
     message: String,
-    createdTimestamp: String,
+    createdTimestamp: Number,
     createdAt: String,
     messageReactions: [messageReaction]
 });
