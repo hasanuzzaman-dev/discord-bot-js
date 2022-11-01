@@ -104,8 +104,8 @@ router.get('/user-interactions/message-count', async (req, res) => {
 
         res.json({
             'total': result.length,
-            //'msgCount': reactionCount,
-            'reactionCount': result
+            'msgCount': result,
+            //'reactionCount': result
         });
 
 
