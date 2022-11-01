@@ -6,8 +6,10 @@ const { Client, Events, Intents, GatewayIntentBits, Partials } = require('discor
 const cors = require('cors');
 const messageSchema = require('./schema/messageSchema');
 const discordMsgRouter = require('./routes/v1/messageHandler');
+const reactionSchema = require('./schema/reactionSchema');
 
 const DiscordMsg = new mongoose.model('DiscordMsg', messageSchema);
+const DiscordReaction = new mongoose.model('DiscordReaction', reactionSchema);
 
 const app = express();
 
@@ -82,8 +84,9 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         }
     }
 
-    const messageReaction = {
+    const messageReaction = new DiscordReaction({
         //id: reaction.message.id,
+        messageId: reaction.message.id,
         server: reaction.message.guild.name,
         channel: reaction.message.channel.name,
         sender: user.username,
@@ -92,10 +95,10 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         reactionCount: reaction.count,
         createdTimestamp: reaction.message.createdTimestamp,
         createdAt: reaction.message.createdAt,
-    }
+    })
 
     //console.log(react);
-    try {
+    /* try {
         const result = await DiscordMsg.findOneAndUpdate(
             { messageId: reaction.message.id },
             { $push: { messageReactions: messageReaction } },
@@ -106,8 +109,15 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
 
     } catch (error) {
         console.error(error);
+    } */
+
+    try {
+        const discordReaction = await messageReaction.save();
+        console.log(discordReaction);
+    } catch (error) {
+        console.error(error);
     }
-    
+
 
 
     // Now the message has been cached and is fully available

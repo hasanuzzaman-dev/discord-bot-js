@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const reactionSchema = mongoose.Schema({
 
+    messageId: String,
     server: String,
     channel: String,
     sender: String,

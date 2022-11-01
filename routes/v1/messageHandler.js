@@ -137,27 +137,27 @@ router.get('/user-interactions/reaction-count', async (req, res) => {
     try {
 
 
-        const msgReactions = await DiscordMsg
+        const msgReactions = await DiscordReaction
             .find({
-                "messageReactions.createdTimestamp": { $gte: startTime, $lte: endTime }
-            }, 'messageReactions')
+                "createdTimestamp": { $gte: startTime, $lte: endTime }
+            })
             .limit(pageSize)
             .skip(pageSize * page)
             .sort({ createdTimestamp: -1 });
 
-        //console.log(msgReactions);
+        console.log(msgReactions);
 
-        let reactionArr = [];
+        /* let reactionArr = [];
         msgReactions.map(a => {
             a.messageReactions.forEach(element => {
                 //console.log(element);
                 reactionArr.push(element);
             });
-        })
+        }) */
 
         //console.log(reactionArr);
 
-        const reactionCount = Object.values(reactionArr.reduce((c, { senderDiscordId, sender }) => {
+        const reactionCount = Object.values(msgReactions.reduce((c, { senderDiscordId, sender }) => {
            // console.log(`C: ${JSON.stringify(c)}, id: ${senderDiscordId}`);
             c[senderDiscordId] = c[senderDiscordId] || { name: sender, senderDiscordId: senderDiscordId, count: 0 };
             c[senderDiscordId].count++;
