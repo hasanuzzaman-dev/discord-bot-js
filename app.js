@@ -85,7 +85,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
     }
 
     var today = new Date();
-    console.log(today);
+    //console.log(today);
     //today.setHours(0, 0, 0, 0);
 
     const messageReaction = new DiscordReaction({

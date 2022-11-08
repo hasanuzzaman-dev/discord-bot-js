@@ -63,13 +63,17 @@ router.get('/discord-messages', async (req, res) => {
 
 // Get message count
 
+
+
 router.get('/user-interactions/message-count', async (req, res) => {
 
     let startTime = req.query.startTime ? parseInt(req.query.startTime) : 0;
     let endTime = req.query.endTime ? parseInt(req.query.endTime) : Date.now();
 
     let page = req.query.page ? parseInt(req.query.page) : 0;
-    const pageSize = req.query.pagesize ? parseInt(req.query.pagesize) : 0;
+    let pageSize = req.query.pagesize ? parseInt(req.query.pagesize) : 10;
+
+    //console.log(pageSize);
 
     if (page > 0) {
         page = page - 1;
@@ -82,6 +86,15 @@ router.get('/user-interactions/message-count', async (req, res) => {
         const result = await DiscordMsg.aggregate([
             //{ $unwind: '$messageReactions' },
             {
+                $lookup:
+                {
+                    from: "users", //another collection name
+                    localField: "senderDiscordId", // order collection field
+                    foreignField: "discordInfo.id", // inventory collection field
+                    as: "user-info"
+                }
+            },
+            {
                 $match:
                     { 'createdTimestamp': { $gte: startTime, $lte: endTime } }
             },
@@ -90,6 +103,7 @@ router.get('/user-interactions/message-count', async (req, res) => {
                 {
                     _id: '$senderDiscordId',
                     name: { $first: '$sender' },
+                    address: { $first: '$user-info.wallet.accountAddress' },
                     count: { $sum: 1 }
                 }
             },
@@ -104,7 +118,7 @@ router.get('/user-interactions/message-count', async (req, res) => {
 
         res.json({
             'total': result.length,
-            'msgCount': result,
+            'interactionCount': result,
             //'reactionCount': result
         });
 
@@ -129,9 +143,9 @@ router.get('/user-interactions/reaction-count', async (req, res) => {
     let endTime = req.query.endTime ? parseInt(req.query.endTime) : Date.now();
 
     let page = req.query.page ? parseInt(req.query.page) : 0;
-    const pageSize = req.query.pagesize ? parseInt(req.query.pagesize) : 0;
+    const pageSize = req.query.pagesize ? parseInt(req.query.pagesize) : 10;
 
-    console.log(`s: ${startTime}, e: ${endTime}`);
+    //console.log(`s: ${startTime}, e: ${endTime}`);
 
     if (page > 0) {
         page = page - 1;
@@ -143,6 +157,15 @@ router.get('/user-interactions/reaction-count', async (req, res) => {
         const result = await DiscordMsg.aggregate([
             { $unwind: '$messageReactions' },
             {
+                $lookup:
+                {
+                    from: "users", //another collection name
+                    localField: "senderDiscordId", // order collection field
+                    foreignField: "discordInfo.id", // inventory collection field
+                    as: "user-info"
+                }
+            },
+            {
                 $match:
                     { 'messageReactions.createdTimestamp': { $gte: startTime, $lte: endTime } }
             },
@@ -151,10 +174,11 @@ router.get('/user-interactions/reaction-count', async (req, res) => {
                 {
                     _id: '$messageReactions.senderDiscordId',
                     name: { $first: '$messageReactions.sender' },
+                    address: { $first: '$user-info.wallet.accountAddress' },
                     count: { $sum: 1 }
                 }
             },
-            { "$sort": { createdTimestamp: -1 } },
+            { "$sort": { 'messageReactions.createdTimestamp': -1 } },
             { "$limit": pageSize },
             { "$skip": pageSize * page },
 
@@ -166,7 +190,7 @@ router.get('/user-interactions/reaction-count', async (req, res) => {
         res.json({
             'total': result.length,
             //'msgCount': reactionCount,
-            'reactionCount': result
+            'interactionCount': result
         });
 
 
